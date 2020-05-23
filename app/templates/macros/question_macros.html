@@ -1,0 +1,40 @@
+{% import 'macros/answer_macros.html' as traverse %}
+{% macro question_wid(question, moment, current_user) -%}
+    <div class="ui fluid card post-card">
+                    <div class="extra content">
+                        <h2 class="left floated ui header">
+                            <img class="left floated mini ui image" src="{{ question.user.get_photo() }}">
+							<a href="{{ url_for('main.public_profile', user_id=question.user.id, full_name=question.user.full_name) }}">{{ question.user.full_name }}</a>    
+                        </h2>
+			<div class="meta">
+				<span class="date">{{question.user.kw_seeker_badge}}</span>
+			</div>
+                        {% if question.user.id == current_user.id %}
+                            <p class="options btn" style="cursor: pointer">
+                                <i class="large ellipsis vertical icon right floated" style="margin-right: -0.5rem;">
+                                </i>
+                            </p>
+                            <div class="ui special popup" style="margin-right: -1rem;margin-top: 2rem;padding-left: 1px;padding-right: 1px; padding-bottom: 1px">
+                                <ul style="list-style-type: none;padding:0;margin-bottom: 1px;margin-top: 0">
+                                    <li class="item" style="padding: 5px 35px 3px 15px"
+                                        onclick='editQuestion("{{ question.id }}", {{ question.title | tojson  }}, {{ question.description | tojson }})'>
+                                        <a href="{{ url_for('main.question_details', question_id=question.id, title=question.title) }}">Edit Question</a>
+                                    </li>
+                                    <li class="item" style="padding: 5px 35px 3px 15px" onclick='deleteQuestion("{{ question.id }}")'>
+                                        <a href="{{ url_for('main.question_details', question_id=question.id, title=question.title) }}">Delete Question</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                    </div>
+                    <div class="content">
+                        <div class="header">
+                            <a href="{{ url_for('main.question_details', question_id=question.id, title=question.title ) }}">{{ question.title }}</a>
+                        </div>
+                        <div class="meta">
+                            <span class="right floated time">{{ moment(question.timestamp).fromNow() }}</span>
+                        </div>
+                    </div>
+    </div>
+{%- endmacro %}

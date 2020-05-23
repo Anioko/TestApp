@@ -1,0 +1,105 @@
+{% extends 'layouts/base.html' %}
+{% import 'macros/form_macros.html' as f %}
+{% import 'macros/post_macros.html' as post_wid %}
+{% import 'macros/job_macros.html' as job_wid %}
+{% import 'macros/follow_macros.html' as follow_wid %}
+
+{% block custom_head_tags %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='slick/slick.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='slick/slick-theme.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='lightbox/css/lightbox.min.css') }}">
+    <style>
+        .display-none {
+            display: none;
+        }
+        .slick-prev:before, .slick-next:before {
+            color: black;
+        }
+        .comment i.icon.ellipsis.vertical:before {
+            font-size: 15px;
+        }
+        .comment .popup li a {
+            color: rgba(0,0,0,.4);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="ui grid container" id="example3">
+        <div class="eight wide computer sixteen wide mobile centered column" id="scroller">
+
+            {% set flashes = {
+            'error':   get_flashed_messages(category_filter=['form-error']),
+            'warning': get_flashed_messages(category_filter=['form-check-email']),
+            'info':    get_flashed_messages(category_filter=['form-info']),
+            'success': get_flashed_messages(category_filter=['form-success'])
+		} %}
+
+                <div class="left ui rail">
+                    <p></p>
+                    <div class="ui sticky">
+                        <h3 class="ui header">Colleagues to follow</h3>
+                        <div class="ui divided items">
+                            {% for user in follow_lists %}
+                                {{ follow_wid.follow_wid(user, current_user) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="right ui right rail">
+                    <div class="ui sticky">
+                        <div class="ui cards">
+                            {% for job in jobs %}
+                                {{ job_wid.job_wid(job) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+
+                {{ post_wid.post_wid(post, moment, current_user) }}
+        </div>
+    </div>
+
+    {% include 'partials/_post_modals.html' %}
+
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="{{ url_for('static', filename='slick/slick.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='lightbox/js/lightbox.min.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.slick').slick({
+                infinite: false,
+            });
+        });
+
+        function like(post_id, user_id) {
+            $.post("{{url_for('post.like_post', post_id=100, user_id=1000)}}".replace(/100/, post_id).replace(/1000/, user_id),
+                {
+                    csrf_token: "{{csrf_token()}}",
+                },
+                function (data, status) {
+                    data = JSON.parse(data)
+                    if (data.status == 'success') {
+                        $("#like-count-" + post_id).html("(" + data.count + " likes) ");
+                        if (data.liked == 1) {
+                            $("#like-icon-" + post_id).removeClass("outline")
+                        } else {
+                            $("#like-icon-" + post_id).addClass("outline");
+                        }
+                    }
+                });
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('.ui.sticky')
+                .sticky({
+                    offset: 50,
+                    bottomOffset: 50,
+                    context: '#example3'
+                });
+        })
+    </script>
+{% endblock %}

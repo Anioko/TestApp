@@ -1,0 +1,52 @@
+{% macro follow_wid(user, current_user) -%}
+    <div class="item">
+        <div class="ui tiny image">
+            <img src="{{ user.get_photo() }}">
+        </div>
+        <div class="middle aligned content">
+            {% if user == current_user %}
+
+            {% elif not current_user.is_following(user) %}
+                <a target="_self" class="ui blue button follow-button" href="#" data-value="{{ user.id }}">
+                    <i class="add icon"></i>Follow</a>
+            {% else %}
+                <a target="_self" class="ui red button follow-button"
+                   href="#" data-value="{{ user.id }}">
+                    <i class="minus icon"></i>Un-Follow</a>
+            {% endif %}
+            <div class="meta">
+                <span class="author"><a
+                        href="{{ url_for('main.user', id=user.id, full_name=user.full_name) }}">{{ user.full_name }}</a></span>
+            </div>
+        </div>
+    </div>
+{%- endmacro %}
+{% macro user_wid(user, current_user) %}
+    <div class="card">
+        <div class="content">
+            <img class="right floated mini ui image" src="{{ user.get_photo() }}">
+            <div class="header">
+                <a href="{{ url_for('main.user', id=user.id, full_name=user.full_name) }}">{{ user.full_name }}</a>
+            </div>
+            <div class="meta">
+                {{ user.profession }}, {{ user.state }}, {{ user.country }}
+            </div>
+            <div class="description">
+
+            </div>
+            <div class="extra content">
+                {% if user == current_user %}
+
+                {% elif not current_user.is_following(user) %}
+                    <a target="_self" class="ui bottom attached blue button follow-button"
+                       href="#" data-value="{{ user.id }}">
+                        <i class="add icon"></i>Follow</a>
+                {% else %}
+                    <a target="_self" class="ui bottom attached red button follow-button"
+                       href="#" data-value="{{ user.id }}">
+                        <i class="minus icon"></i>UnFollow</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}

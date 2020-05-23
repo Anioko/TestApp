@@ -1,0 +1,19 @@
+{% macro job_wid(job) -%}
+    <div class="card">
+        <div class="content">
+            <div class="header">
+                <div class="center aligned ui">
+                    <img height="100" src="{{ job.get_photo() }}">
+                </div>
+                <hr>
+                <a href="{{ url_for('jobs.job_details', position_id=job.id, position_title=job.position_title, position_city=job.position_city, position_state=job.position_state, position_country=job.position_country) }}">{{ job.position_title }}</a>
+            </div>
+            <div class="meta">Published By :<span class="ui primary label">{{ job.organisation.org_name }}</span></div>
+            <div class="meta">Published&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ job.pub_date.strftime( '%d %B, %Y ') }}<br>
+                Ends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ job.end_date.strftime( '%d %B, %Y ') }}</div>
+            <div class="description">
+                {{ job.position_city }}, {{ job.position_state }}, {{ job.position_country }}
+            </div>
+        </div>
+    </div>
+{%- endmacro %}

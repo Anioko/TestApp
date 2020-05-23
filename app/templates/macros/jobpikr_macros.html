@@ -1,0 +1,15 @@
+{% macro jobpikr_wid(jobpikr) -%}
+    <div class="card">
+        <div class="content">
+            <div class="header">
+                <a href="{{ url_for('jobs.jobpikr_details', job_id=jobpikr.id, job_title=jobpikr.job_title, city=jobpikr.city) }}">{{ jobpikr.job_title }}</a>
+            </div>
+            <div class="meta">Published By :<span class="ui primary label">{{ jobpikr.company_name }}</span></div>
+            <div class="meta">Published&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ jobpikr.post_date.strftime( '%d %B, %Y ') }}<br>
+                </div>
+            <div class="description">
+                {{ jobpikr.inferred_state }}, {{ jobpikr.inferred_country }}            
+            </div>
+        </div>
+    </div> 
+{%- endmacro %}

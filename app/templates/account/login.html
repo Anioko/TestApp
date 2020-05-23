@@ -14,21 +14,22 @@
             } %}
 
             {{ f.begin_form(form, flashes) }}
-                {{ f.render_form_field(form.email) }}
-                {{ f.render_form_field(form.password) }}
-                <div class="ui two column grid">
-                    {{ f.render_form_field(form.remember_me, extra_classes='column') }}
-                    <div class="right aligned column">
-                        <a href="{{ url_for('account.reset_password_request') }}">Forgot password?</a>
-                    </div>
+            <input type="hidden" name="next" value="{{ next }}">
+            {{ f.render_form_field(form.email) }}
+            {{ f.render_form_field(form.password) }}
+            <div class="ui two column grid">
+                {{ f.render_form_field(form.remember_me, extra_classes='column') }}
+                <div class="right aligned column">
+                    <a href="{{ url_for('account.reset_password_request') }}">Forgot password?</a>
                 </div>
+            </div>
 
-                {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
-                {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
-                {{ f.form_message(flashes['info'], header='Information', class='info') }}
-                {{ f.form_message(flashes['success'], header='Success!', class='success') }}
+            {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
+            {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
+            {{ f.form_message(flashes['info'], header='Information', class='info') }}
+            {{ f.form_message(flashes['success'], header='Success!', class='success') }}
 
-                {{ f.render_form_field(form.submit) }}
+            {{ f.render_form_field(form.submit) }}
             {{ f.end_form(form) }}
         </div>
     </div>

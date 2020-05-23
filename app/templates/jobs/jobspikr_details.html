@@ -1,0 +1,170 @@
+{% extends 'layouts/base.html' %}
+{% block page_title %}{{ appt.job_title or '(No Title)' }} job vacancy in {{ appt.job_city|default('') }}{% endblock %}
+{% block custom_head_tags %}
+	    <meta name="description" content="{{ appt.job_description |truncate(200, True) }}">
+    <meta name="image" content="{{ url_for('static', filename='img/rsz_dreamstime_m_141105914.jpg') }}">
+    <!-- Schema.org for Google -->
+    <meta itemprop="name" content="{{ appt.job_title or '(No Title)' }} job vacancy in {{ appt.city|default('') }}">
+    <meta itemprop="description" content="{{ appt.job_description |truncate(200, True) }}">
+    <meta itemprop="image" content="{{ url_for('static', filename='img/rsz_dreamstime_m_141105914.jpg') }}">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ appt.job_title or '(No Title)' }} job vacancy in {{ appt.city|default('') }}">
+    <meta name="twitter:description" content="{{ appt.job_description |truncate(200, True) }}">
+    <meta name="twitter:site" content="@mediville">
+    <meta name="twitter:creator" content="@anioko1">
+    <meta name="twitter:image:src" content="{{ url_for('static', filename='img/rsz_dreamstime_m_141105914.jpg') }}">
+    <!-- Open Graph general (Facebook, Pinterest & Google+) -->
+    <meta name="og:title" content="{{ appt.job_title or '(No Title)' }} job vacancy in {{ appt.city|default('') }}">
+    <meta name="og:description" content="{{ appt.job_description |truncate(200, True) }}">
+    <meta name="og:image" content="{{ url_for('static', filename='img/rsz_dreamstime_m_141105914.jpg') }}">
+    <meta name="og:url" content="https://mediville.com">
+    <meta name="og:site_name" content="Mediville Jobs">
+    <meta name="og:type" content="website">	
+	
+{% endblock %}
+{% block content %}
+    <div class="ui sixteen column centered grid">
+        <div class="row edit-controls" align="center">
+        </div>
+        <div class="ui sixteen wide column created_job">
+            <h1>{{ appt.job_title or '(No Title)' }}</h1>
+            {{ share.load() }}
+            <h3>
+
+                    <a href="{{ appt.url}}">
+                        <button style="margin-bottom: 20px;margin-right: 0;" type="button"
+                                class="big ui teal button"></i> Apply for this job
+                        </button>
+                    </a>
+
+
+            </h3>
+            <h3><i class="user outline icon"></i> Organization: {{ appt.company_name }}</h3>
+            <h3><i class="calendar outline icon"></i> Posted: {{ appt.post_date.strftime( '%d %B, %Y ') }}</h3>
+            <h3><i class="marker icon"></i> {{ appt.city|default('') }},{{ appt.inferred_country|default('') }}
+            </h3>
+
+
+            <div class="ui two column centered grid">
+                <div class="column">
+                    <hr>
+                    <h4>Job description</h4><!---I took out |default('')|markdown here---->
+                    {{ appt.job_description |safe }}
+                    {{ share.create(title='Share with: ') }}
+                    <hr>
+                </div>
+            </div>
+            <div class="row edit-controls" align="center">
+                <h3>
+
+                        <a href="{{ appt.url}}">
+                            <button style="margin-bottom: 20px;margin-right: 0;" type="button"
+                                    class="big ui teal button"></i> Apply for this job
+                            </button>
+                        </a>
+                </h3>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+
+    <style>
+        body {
+
+            font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.42857;
+        }
+
+        .applicants table {
+            font-size: 1.2em;
+            color: #1C3766;
+        }
+
+        .created_job {
+            font-family: 'Lato', sans-serif;
+            color: #1C3766;
+        }
+
+        .created_job h1 {
+            font-size: 4em;
+            font-weight: 600;
+        }
+
+        .created_job h2 {
+            font-size: 2.5em;
+            font-weight: 400;
+        }
+
+        .created_job h3 {
+            font-size: 1.6em;
+            margin: 10px 0 15px 0;
+            font-weight: 500;
+        }
+
+        .created_job h4 {
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+
+        .created_job p,
+        .created_job li {
+            font-size: 1.3em;
+        }
+
+        .created_job a {
+            color: #5B6C7E;
+            text-decoration: none;
+            -webkit-transition: color .3s;
+            -o-transition: color .3s;
+            transition: color .3s;
+            font-weight: 500;
+            border-bottom: 2px solid;
+        }
+
+        .created_job a:hover {
+            color: #EC5805;
+            text-decoration: none;
+        }
+
+        .created_job h1,
+        .created_job h2,
+        .created_job h3 {
+            text-align: center;
+        }
+
+        .created_job .requirements ul li {
+            job: relative;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .organisation_details {
+            padding: 60px 15px 10px 15px;
+        }
+
+        .share {
+            padding-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .created_job h1 {
+                font-size: 2.7em;
+            }
+
+            .created_job h2 {
+                font-size: 2em;
+            }
+
+            .created_job h3 {
+                font-size: 1.4em;
+            }
+        }
+
+    </style>
+{% endblock %}
+{% block scripts %}
+{% endblock %}

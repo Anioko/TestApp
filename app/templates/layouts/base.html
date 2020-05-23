@@ -1,48 +1,281 @@
 {% import 'macros/nav_macros.html' as nav %}
-
 <!DOCTYPE html>
-<html>
-    <head>
-        {% include 'partials/_head.html' %}
-        {# Any templates that extend this template can set custom_head_tags to add scripts to their page #}
-        {% block custom_head_tags %}{% endblock %}
-    </head>
-    <body>
-      {# Example dropdown menu setup. Uncomment lines to view
-        {% set dropdown = 
-          [
-            ('account stuff',
-              [
-                ('account.login', 'login', 'sign in'),
-                ('account.logout', 'logout', 'sign out'),
-                ('2nd drop', [
-                  ('account.login', 'login 2', ''),
-                  ('3rd drop', [
-                    ('main.index', 'home 2', '')
-                  ])
-                ])
-              ]
-            ),
-            ('main.index', 'home 1', 'home')
-          ]
-        %}
-      #}
+<html lang="en">
+<head>
+    <title>{% block page_title %}{{ config.APP_NAME }}{% endblock %}</title>
+    {% include 'partials/_head.html' %}
+    {% if config['DEBUG']  != True %}
+        <meta name="ws_url" content="https://www.mediville.com">
+    {% else %}
+        <meta name="ws_url" content="http://localhost:3000">
+    {% endif %}
+    {% if current_user.is_authenticated %}
+        <meta name="user_id" content="{{ request.cookies.get('jwt_token') }}">
+    {% endif %}
+    {% block custom_head_tags %}{% endblock %}
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/ico/favicon.ico') }}">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144"
+          href="{{ url_for('static', filename='images/ico/apple-touch-icon-144-precomposed.png') }}">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114"
+          href="{{ url_for('static', filename='images/ico/apple-touch-icon-114-precomposed.png') }}">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72"
+          href="{{ url_for('static', filename='images/ico/apple-touch-icon-72-precomposed.png') }}">
+    <link rel="apple-touch-icon-precomposed"
+          href="{{ url_for('static', filename='images/ico/apple-touch-icon-57-precomposed.png') }}">
+    <meta name="google-site-verification" content="eO7v2aO6uakHOD3gSnChM4_GSUpar3MVqPZzr9cWENE" />
+    <style>
+        .ui.menu.fixed {
+            z-index: 1001;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/toastr.min.css') }}">
+    <script type="text/javascript">
+        window._mfq = window._mfq || [];
+        (function() {
+            var mf = document.createElement("script");
+            mf.type = "text/javascript"; mf.async = true;
+            mf.src = "//cdn.mouseflow.com/projects/2307558d-5b70-43db-bf63-ad4dd77ceead.js";
+            document.getElementsByTagName("head")[0].appendChild(mf);
+        })();
+    </script>
 
-        {% block nav %}
-          {# add dropdown variable here to the render_nav method to render dropdowns #}
-          {{ nav.render_nav(current_user) }}
-        {% endblock %}
+</head>
+<body>
+<div class="ui {% if request.blueprint == 'marketplace' %}marketplace{% endif %} container-fluid {% if current_user.is_authenticated %} min-container {% endif %}">
+    {% block sidebars %}{% endblock %}
+    {% block nav %}
+        {{ nav.render_nav(current_user) }}
+    {% endblock %}
+    {% include 'partials/_flashes.html' %}
+    {% if current_user.is_admin() %}
 
-        {% include 'partials/_flashes.html' %}
-        {# When extended, the content block contains all the html of the webpage #}
-        {% block content %}
-        {% endblock %}
-
-        {# Implement CSRF protection for site #}
-        {% if csrf_token()|safe %}
-            <div style="visibility: hidden; display: none">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token()|safe }}">
+    {% endif %}
+    {% block content %}{% endblock %}
+    {% if csrf_token()|safe %}
+        <div style="visibility: hidden; display: none">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token()|safe }}">
+        </div>
+    {% endif %}
+</div>
+<br>
+<br>
+{% if current_user.is_authenticated %}
+    <div class="primary ui footer">
+        <br>
+        <div class="ui primary vertical footer segment">
+            <div class="ui container">
+                <div class="ui stackable inverted divided equal height stackable grid">
+                    <div class="four wide column">
+                        <h4 class="ui  header">Fast Links</h4>
+                        <div class="ui link list">
+                            <a href="{{ url_for('main.index') }}" class="item">Home</a>
+                            <a href="{{ url_for('public.contact') }}" class="item">Contact Us</a>
+                            <a href="{{ url_for('public.about') }}" class="item">About</a>
+                            <a href="{{ url_for('public.faq') }}" class="item">FAQ</a>
+                            <a href="{{ url_for('public.terms') }}" class="item">Terms</a>
+                            <a href="{{ url_for('public.privacy') }}" class="item">Privacy</a>
+                        </div>
+                    </div>
+                    <div class="four wide column">
+                        <h4 class="ui  header">User</h4>
+                        <div class="ui  link list">
+                            <a href="{{ url_for('main.select_section') }}" class="item">Network</a>
+                            <a href="{{ url_for('post.post_create') }}" class="item">Posts</a>
+                            <a href="{{ url_for('main.question') }}" class="item">Questions</a>
+                            <a href="{{ url_for('organisations.org_home') }}" class="item">Organization</a>
+                            <a href="{{ url_for('jobs.jobs_list') }}" class="item">Jobs</a>
+                            <a href="{{ url_for('main.conversations') }}" class="item">Messages</a>
+                            <a href="{{ url_for('main.notifications') }}" class="item">Notifications</a>
+                            <a href="{{ url_for('account.manage') }}" class="item">Profile</a>
+                            <a href="{{ url_for('account.logout') }}" class="item">Logout</a>
+                        </div>
+                    </div>
+                    <div class="seven wide column" style="text-align: center">
+                        <img class="footer-img" src="{{ url_for('static', filename='images/footer_logo.png') }}" alt="Mediville">
+                        <p style="color: white"><b>A healthcare professional networking and jobs platform built in collaboration with doctors, nurses and other health and allied care professionals.</b></p>
+                    </div>
+                </div>
             </div>
-        {% endif %}
-    </body>
+            <br>
+            <br>
+        </div>
+    </div>
+{% endif %}
+<script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+{% assets 'vendor_js' %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
+{% assets 'app_js' %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>{% endassets %}
+<script type="text/javascript" src="/static/scripts/custom.js"></script>
+<script>
+    function getStats(){
+        $(document).ready(function () {
+            $.get("{{ url_for('main.notifications_count') }}", function ( data ) {
+                let messages = parseInt(data.messages);
+                let notifications = parseInt(data.notifications);
+                let label = $('.item.Messages').find('.floating.ui.blue.label');
+                let nlabel = $('.item.Notifications').find('.floating.ui.blue.label');
+                if (messages > 0){
+                    label.html(messages);
+                    if (! label.hasClass('active')){
+                        label.addClass('active')
+                    }
+                }
+                else
+                {
+                    label.html('');
+                    label.removeClass('active');
+                }
+                if (notifications > 0){
+                    nlabel.html(notifications);
+                    if (! nlabel.hasClass('active')){
+                        nlabel.addClass('active')
+                    }
+                }
+                else{
+                    nlabel.html('');
+                    nlabel.removeClass('active');
+                }
+            })
+        });
+    }
+    getStats();
+</script>
+<script>
+    function editPost(post_id, text, privacy) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.edit-post-modal').modal('show');
+            $('.edit-post-modal').find('form').attr('action', "{{ url_for('post.edit_post', post_id=0) }}".replace(0, post_id));
+            $('.edit-post-modal').find('textarea[name=text]').val(text);
+            $('.edit-post-modal').find('input[name=post_privacy][value=' + privacy + ']').attr('checked', true)
+        });
+    }
+
+    function deletePost(post_id) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.delete-post-modal').modal('show');
+            $('.delete-post-modal').find('form').attr('action', "{{ url_for('post.delete_post', post_id=0) }}".replace(0, post_id));
+            {#$('.delete-post-modal').find('input[name=post_id]').val(post_id);#}
+        });
+    }
+    function editComment(comment_id, comment_text) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.edit-comment-modal').modal('show');
+            $('.edit-comment-modal').find('form').attr('action', "{{ url_for('post.edit_comment', comment_id=0) }}".replace(0, comment_id));
+            $('.edit-comment-modal').find('input[name=comment_text]').val(comment_text);
+        });
+    }
+    function deleteComment(comment_id) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.delete-comment-modal').modal('show');
+            $('.delete-comment-modal').find('form').attr('action', "{{ url_for('post.delete_comment', comment_id=0) }}".replace(0, comment_id));
+        });
+    }
+    function editQuestion(question_id, title, desc) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.edit-question-modal').modal('show');
+            $('.edit-question-modal').find('form').attr('action', "{{ url_for('main.edit_question', question_id=0) }}".replace(0, question_id));
+            $('.edit-question-modal').find('input[name=title]').val(title);
+            $('.edit-question-modal').find('textarea[name=description]').val(desc);
+        });
+    }
+    function deleteQuestion(question_id) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.delete-question-modal').modal('show');
+            $('.delete-question-modal').find('form').attr('action', "{{ url_for('main.delete_question', question_id=0) }}".replace(0, question_id));
+        });
+    }
+
+    function editAnswer(answer_id, answer_text) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.edit-answer-modal').modal('show');
+            $('.edit-answer-modal').find('form').attr('action', "{{ url_for('main.edit_answer', answer_id=0) }}".replace(0, answer_id));
+            $('.edit-answer-modal').find('textarea[name=reply]').val(answer_text);
+        });
+    }
+    function deleteAnswer(answer_id) {
+        $('.options.btn.active').click();
+        $(document).ready(function () {
+            $('.delete-answer-modal').modal('show');
+            $('.delete-answer-modal').find('form').attr('action', "{{ url_for('main.delete_answer', answer_id=0) }}".replace(0, answer_id));
+        });
+    }
+
+    function confirmDelete(selector) {
+        $(selector).find('form').submit()
+    }
+
+    $(document).on('click', '.follow-button', function () {
+        let user_id = $(this).attr('data-value');
+        selector = this;
+        let data = new FormData();
+        data.set('csrf_token', "{{ csrf_token()  }}");
+        data.set('user_id', user_id);
+        toastr.options = {
+            "closeButton": false,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-left",
+            "preventDuplicates": false,
+            "showDuration": "5000",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut",
+        };
+        axios.post('{{ url_for("api.togglefollow") }}', data )
+            .then(function (response) {
+                if (response.data.status === 1) {
+                    toastr["info"](response.data.message, "Following Status Change");
+                    if (response.data.following === true){
+                                            console.log($(selector))
+                        $(selector).addClass('red');
+                        $(selector).removeClass('blue');
+                        $(selector).html('<i class="minus icon"></i>Un-Follow');
+                    }
+                    else {
+                        $(selector).removeClass('red');
+                        $(selector).addClass('blue');
+                        $(selector).html('<i class="plus icon"></i>Follow');
+                    }
+                }
+                else {
+
+                    toastr["error"](response.data.message, "Sorry");
+                }
+            })
+            .catch(function (error) {
+                toastr["error"]("Unknown error happened, please try again", "Sorry");
+            })
+            .finally(function () {
+            });
+        return false;
+    });
+</script>
+{% include 'partials/_analytics.html' %}
+{{ moment.include_moment() }}
+<script src="{{ url_for('static', filename='messaging/checkbox.min.js') }}"></script>
+<script src="{{ url_for('static', filename='messaging/vue.js') }}"></script>
+<script src="{{ url_for('static', filename='messaging/socket.io.js') }}"></script>
+<script src="{{ url_for('static', filename='messaging/moment.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
+{% include 'partials/_realtime.html' %}
+{% block scripts %}{% endblock %}
+{% if request.blueprint == 'marketplace' %}
+    {% include 'marketplace/partials/scripts.html' %}
+{% endif %}
+</body>
 </html>

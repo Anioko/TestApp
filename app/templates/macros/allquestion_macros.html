@@ -1,0 +1,21 @@
+{% import 'macros/answer_macros.html' as traverse %}
+{% macro question_wid(question) -%}
+    <div class="ui fluid card post-card">
+                    <div class="extra content">
+                        <h2 class="left floated ui header">
+                            <img class="left floated mini ui image" src="{{ question.user.get_photo() }}">
+							<a href="{{ url_for('main.user', id=question.user.id, full_name=question.user.full_name) }}">{{ question.user.full_name }}</a>
+
+                           
+                        </h2>
+			<div class="meta">
+				<span class="date">{{question.user.kw_seeker_badge}}</span>
+			</div>
+                    </div>
+                    <div class="content">
+                        <div class="header">
+                            <a href="{{ url_for('main.question_details', question_id=question.id, title=question.title ) }}">{{ question.title }}</a>
+                        </div>
+                    </div>
+    </div>
+{%- endmacro %}  

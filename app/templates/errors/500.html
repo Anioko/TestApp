@@ -1,6 +1,14 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-    <h1 class="ui header">500</h1>
-    <h3 class="ui header">Internal Server Error</h3>
+    <div style="text-align: center; margin-top: 100px">
+        <h1>
+            500
+        </h1>
+        <h5>OOPS.<br>
+            Some thing Wrong happened with our servers<br>
+            Try again later</h5>
+        <a class="ui inverted green  button" href="{{ url_for('main.index') }}">Go To Home Page</a>
+
+    </div>
 {% endblock %}

@@ -7,6 +7,9 @@
 
 {% block content %}
     <div class="ui stackable centered grid container">
+            <div class="four wide column">
+                {% include 'admin/partials/nav.html' %}
+        </div>
         <div class="twelve wide column">
             <a class="ui basic compact button" href="{{ url_for('admin.index') }}">
                 <i class="caret left icon"></i>
@@ -26,36 +29,36 @@
 
             {{ f.begin_form(form, flashes) }}
 
-                {{ f.render_form_field(form.role) }}
+            {{ f.render_form_field(form.role) }}
+
+            <div class="two fields">
+                {{ f.render_form_field(form.first_name) }}
+                {{ f.render_form_field(form.last_name) }}
+            </div>
+
+            {{ f.render_form_field(form.email) }}
+
+            {% if form.password %}
 
                 <div class="two fields">
-                    {{ f.render_form_field(form.first_name) }}
-                    {{ f.render_form_field(form.last_name) }}
+                    {{ f.render_form_field(form.password) }}
+                    {{ f.render_form_field(form.password2) }}
                 </div>
 
-                {{ f.render_form_field(form.email) }}
+            {% endif %}
 
-                {% if form.password %}
+            {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
+            {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
+            {{ f.form_message(flashes['info'], header='Information', class='info') }}
+            {{ f.form_message(flashes['success'], header='Success!', class='success') }}
 
-                    <div class="two fields">
-                        {{ f.render_form_field(form.password) }}
-                        {{ f.render_form_field(form.password2) }}
-                    </div>
-
-                {% endif %}
-
-                {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
-                {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
-                {{ f.form_message(flashes['info'], header='Information', class='info') }}
-                {{ f.form_message(flashes['success'], header='Success!', class='success') }}
-
-                {% for field in form | selectattr('type', 'equalto', 'SubmitField') %}
-                    {{ f.render_form_field(field) }}
-                {% endfor %}
+            {% for field in form | selectattr('type', 'equalto', 'SubmitField') %}
+                {{ f.render_form_field(field) }}
+            {% endfor %}
 
             {{ f.end_form() }}
-            {% if form.password %} 
-              {{ check.password_check('password', 0) }} 
+            {% if form.password %}
+                {{ check.password_check('password', 0) }}
             {% endif %}
         </div>
     </div>

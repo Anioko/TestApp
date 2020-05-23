@@ -1,0 +1,62 @@
+{% macro traverse(children, post_id, moment, current_user) -%}
+    {% if children|length > 0 %}
+        {% for child in children %}
+            <div class="comment">
+                <a class="avatar" href="{{ url_for('main.user', id=child['node'].author.id, full_name=child['node'].author.full_name) }}">
+                    <img class="rounded" src="{{ child['node'].author.get_photo() }}">
+                </a>
+                <div class="content">
+                    <a class="author" href="{{ url_for('main.user', id=child['node'].author.id, full_name=child['node'].author.full_name) }}">{{ child['node'].author.full_name }}</a>
+                    <div class="metadata">
+                        <span class="date">{{ moment(child['node'].created_at).fromNow() }}</span>
+                    </div>
+
+                    {% if child['node'].author.id == current_user.id %}
+                        <p class="options btn" style="cursor: pointer; float: right; margin: 5px 5px 0 0">
+                            <i class="large ellipsis vertical icon right floated" style="margin-right: -0.5rem;">
+                            </i>
+                        </p>
+                        <div class="ui special popup" style="margin-right: -1rem;margin-top: 2rem;padding-left: 1px;padding-right: 1px; padding-bottom: 1px">
+                            <ul style="list-style-type: none;padding:0;margin-bottom: 1px;margin-top: 0">
+                                <li class="item" style="padding: 5px 35px 3px 15px"
+                                    onclick='editComment("{{ child['node'].id }}", {{ child['node'].text | tojson }})'>
+                                    <a href="#">Edit Comment</a>
+                                </li>
+                                <li class="item" style="padding: 5px 35px 3px 15px" onclick='deleteComment("{{ child['node'].id }}")'>
+                                    <a href="#">Delete Comment</a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="text">
+                        {{ child['node'].text }}
+                    </div>
+                    <div class="actions">
+                        <a class="reply" href="#"
+                           onclick="$('#comment-'+{{ child['node'].id }}).toggleClass('display-none');return false;">Reply</a>
+                        <form id="comment-{{ child['node'].id }}" class="ui reply form display-none" method="POST"
+                              action="{{ url_for('post.submit_comment') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="post_id" value="{{ post_id }}"/>
+                            <input type="hidden" name="parent_id" value="{{ child['node'].id }}"/>
+                            <div class="inline fields">
+                                <div class="field" style="padding-right: 10px; padding-left: 10px;;width: calc(100% - 60px);">
+                                    <input id="replyid" name="comment_text" style="background: #eee;border-radius: 15px;width:100%">
+                                </div>
+                                <div class="field  "><button id="submit" name="submit" type="submit" class="ui icon primary button"><i class="icon send"></i></button></div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% if 'children' in child['node'].drilldown_tree()[0].keys() %}
+                    <div class="comments">
+                        {{ traverse(child['node'].drilldown_tree()[0]['children'], post_id, moment, current_user) }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {%- endif %}
+
+{%- endmacro %}

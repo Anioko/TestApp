@@ -3,10 +3,13 @@
 #}
 
 {% macro render_menu_items(endpoints) %}
-    {% for endpoint, name, icon in endpoints %}
-        <a class="item {% if request.endpoint == endpoint %}active{% endif %}" href="{{ url_for(endpoint) }}">
+    {% for endpoint, name, icon, count in endpoints %}
+        <a class="item {% if request.endpoint == endpoint %}active{% endif %} {{ name }}" href="{{ url_for(endpoint) }}">
             {% if icon %}
                 <i class="{{ icon }} icon"></i>
+            {% endif %}
+            {% if count %}
+                <div class="floating ui blue label active" style="top:0">{{ count }}</div>
             {% endif %}
             {{ name | safe }}
         </a>
@@ -20,15 +23,21 @@
 #}
 
 {% macro header_items(current_user) %}
-    {% set endpoints = [
-      ('main.index', config.APP_NAME, 'home'),
-      ('main.about', 'About', 'info')
-    ]%}
-    {% set user = [] %}
     {% if current_user.is_authenticated %}
-      {% set user = ([(current_user.role.index + '.index', current_user.role.name + ' Dashboard', 'user')]) %}
-    {% endif %} 
-    {{ render_menu_items( endpoints +  user ) }}
+        {% set endpoints = [('main.index', config.APP_NAME, 'home', ''),] %}
+        {% set user = [] %}
+        {% if current_user.is_authenticated and current_user.role.is_admin %}
+            {% set user = ([(current_user.role.index + '.index', current_user.role.name + ' Dashboard', 'user')]) %}
+        {% endif %}
+        {{ render_menu_items( endpoints +  user ) }}
+    {% else %}
+        {% set endpoints = [
+        ('public.index', 'Home', 'home', ''),
+                ('account.register', 'Register', 'list layout', ''),
+        ('account.login', 'Log In', 'sign in', '')
+      ] %}
+        {{ render_menu_items(endpoints) }}
+    {% endif %}
 {% endmacro %}
 
 {# This renders the right hand side of the navigation bar. If the user is logged in, it links to 
@@ -36,22 +45,31 @@
 #}
 {% macro account_items(current_user) %}
     {% if current_user.is_authenticated %}
-      {% set endpoints = [
-        ('account.manage', 'Your Account', 'settings'),
-        ('account.logout', 'Log out', 'sign out')
+        {% set endpoints = [	  ('post.post_create', 'Posts', 'write', ''),
+      ('main.question', 'Questions', 'edit', ''),
+      ('organisations.org_home', 'Organizations', 'user outline', ''),
+	  ('jobs.jobs_list', 'Jobs', 'suitcase', ''),
+	  ('main.select_section', 'Network', 'users', ''),
+	  ('main.conversations', 'Messages', 'comments', '...'),
+	  ('main.notifications', 'Notifications', 'alarm', '...'),
+        ('account.manage', current_user.first_name , 'settings', ''),
+        ('account.logout', 'Log out', 'sign out', '')
       ] %}
-      {{ render_menu_items(endpoints) }}
+        {{ render_menu_items(endpoints) }}
     {% else %}
-      {% set endpoints = [
-        ('account.register', 'Register', 'list layout'),
-        ('account.login', 'Log In', 'sign in')
+        {% set endpoints = [
+        ('public.about', 'About', '', ''),
+        ('public.contact', 'Contact', '', ''),
+		('public.faq', 'Faq', '', ''),
+		('public.terms', 'Terms', '', ''),
+		('public.privacy', 'Privacy', '', '')
       ] %}
-      {{ render_menu_items(endpoints) }}
+        {{ render_menu_items(endpoints) }}
     {% endif %}
 {% endmacro %}
 
 {% macro mobile_nav(current_user, dropdown=None) %}
-    <div class="mobile only row">
+    <div class="mobile only  tablet only row">
         <div class="ui fixed inverted black main menu">
             {{ header_items(current_user) }}
             <div class="right menu">
@@ -61,28 +79,45 @@
 
         {# The menu items which will be shown when open-nav is clicked #}
         <div class="ui fixed vertical fluid menu">
-          {{ account_items(current_user) }}
-          {{ create_dropdown(dropdown) }}
+            {{ account_items(current_user) }}
+            {{ create_dropdown(dropdown) }}
         </div>
+
+        {% if request.blueprint == 'marketplace' %}
+            <div class="ui fixed indigo inverted  menu" style="top:2.85714286em">
+                {{ render_menu_items([('marketplace.index', 'Market', 'shopping basket', '')]) }}
+                <div class="right menu">
+                    <a class="icon item" id="open-nav1"><i class="sidebar icon"></i></a>
+                </div>
+            </div>
+            <div class="ui fixed vertical fluid menu" style="top:2.85714286em;">
+                {{ render_menu_items([('marketplace.categories', 'Categories', 'database', '')]) }}
+                {{ render_menu_items([('marketplace.buyer_panel', 'Buyer Dashborad', 'credit card outline', '')]) }}
+                {% if current_user.is_seller %}
+                    {{ render_menu_items([('marketplace.seller_panel', 'Seller Dashborad', 'sitemap', '')]) }}
+                {% endif %}
+                {{ render_menu_items([('marketplace.cart', 'Cart', 'main shopping cart', get_cart())]) }}
+            </div>
+        {% endif %}
     </div>
 {% endmacro %}
 
 {% macro create_dropdown(dropdown) %}
-  {% for item in dropdown %}
-    {% if item | length == 3 %}
-      {{ render_menu_items([item]) }}
-    {% elif item | length == 2 %}
-      <div class="ui dropdown item" onClick="changeMenu(this)">{{ item[0] }} <i class="dropdown icon"></i>
-        <div class="inverted black menu">
-          {{ create_dropdown(item[1]) }}
-        </div>
-      </div>
-    {% endif %}
-  {% endfor %}
+    {% for item in dropdown %}
+        {% if item | length == 3 %}
+            {{ render_menu_items([item]) }}
+        {% elif item | length == 2 %}
+            <div class="ui dropdown item" onClick="changeMenu(this)">{{ item[0] }} <i class="dropdown icon"></i>
+                <div class="inverted black menu">
+                    {{ create_dropdown(item[1]) }}
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
 {% endmacro %}
 
 {% macro desktop_nav(current_user, dropdown=None) %}
-    <div class="computer tablet only row">
+    <div class="computer only row">
         <div class="ui fixed inverted black main menu">
             <div class="ui container">
                 {{ header_items(current_user) }}
@@ -92,6 +127,22 @@
                 </div>
             </div>
         </div>
+        {% if request.blueprint == 'marketplace' %}
+            <div class="ui fixed indigo  inverted menu" style="top:2.85714286em">
+                <div class="ui container">
+                    {{ render_menu_items([('marketplace.index', 'Market', 'shopping basket', '')]) }}
+                    <div class="right menu">
+                        {{ render_menu_items([('marketplace.categories', 'Categories', 'database', '')]) }}
+                        {{ render_menu_items([('marketplace.buyer_panel', 'Buyer Dashborad', 'credit card outline', '')]) }}
+                        {% if current_user.is_seller %}
+                            {{ render_menu_items([('marketplace.seller_panel', 'Seller Dashborad', 'sitemap', '')]) }}
+                        {% endif %}
+                        {{ render_menu_items([('marketplace.cart', '', 'main shopping cart', get_cart())]) }}
+
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endmacro %}
 

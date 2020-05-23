@@ -5,8 +5,10 @@
 
 {% set endpoints = [
     ('admin.user_info', 'User information'),
+	('admin.change_user_name', 'Change First and Last name'),
     ('admin.change_user_email', 'Change email address'),
     ('admin.change_account_type', 'Change account type'),
+	('admin.change_account_confirmation', 'Confirm user'),
     (deletion_endpoint, 'Delete user')
 ] %}
 
@@ -23,21 +25,37 @@
 
 {% macro user_info(user) %}
     <table class="ui compact definition table">
-        <tr><td>Full name</td><td>{{ '%s %s' % (user.first_name, user.last_name) }}</td></tr>
-        <tr><td>Email address</td><td>{{ user.email }}</td></tr>
-        <tr><td>Account type</td><td>{{ user.role.name }}</td></tr>
+        <tr>
+            <td>Full name</td>
+            <td>{{ '%s %s' % (user.first_name, user.last_name) }}</td>
+        </tr>
+        <tr>
+            <td>Email address</td>
+            <td>{{ user.email }}</td>
+        </tr>
+        <tr>
+            <td>Account type</td>
+            <td>{{ user.role.name }}</td>
+        </tr>
+        <tr>
+            <td>Account Confirmed</td>
+            <td>{{ user.confirmed }}</td>
+        </tr>
     </table>
 {% endmacro %}
 
 {% block content %}
     <div class="ui stackable centered grid container">
+        <div class="four wide column">
+            {% include 'admin/partials/nav.html' %}
+        </div>
         <div class="twelve wide column">
             <a class="ui basic compact button" href="{{ url_for('admin.registered_users') }}">
                 <i class="caret left icon"></i>
                 Back to all users
             </a>
             <h2 class="ui header">
-                {{ user.full_name() }}
+                {{ user.full_name }}
                 <div class="sub header">View and manage {{ user.first_name }}’s account.</div>
             </h2>
         </div>
@@ -75,19 +93,23 @@
                 {% else %}
                     {{ user_info(user) }}
                 {% endif %}
-            </div>
         </div>
     </div>
+    </div>
 
+{% endblock %}
+{% block scripts %}
     <script type="text/javascript">
-        $('.deletion.checkbox').checkbox({
-            onChecked: function() {
-                $('.deletion.button').removeClass('disabled')
+        $(document).ready(function () {
+            $('.deletion.checkbox').checkbox({
+                onChecked: function () {
+                    $('.deletion.button').removeClass('disabled')
                         .attr('href', '{{ url_for('admin.delete_user', user_id=user.id) }}');
-            },
-            onUnchecked: function() {
-                $('.deletion.button').addClass('disabled').removeAttr('href');
-            }
+                },
+                onUnchecked: function () {
+                    $('.deletion.button').addClass('disabled').removeAttr('href');
+                }
+            });
         });
     </script>
 {% endblock %}

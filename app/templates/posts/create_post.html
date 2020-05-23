@@ -1,0 +1,200 @@
+{% extends 'layouts/base.html' %}
+{% import 'macros/form_macros.html' as f %}
+{% import 'macros/post_macros.html' as post_wid %}
+{% import 'macros/job_macros.html' as job_wid %}
+{% import 'macros/follow_macros.html' as follow_wid %}
+
+{% block custom_head_tags %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='slick/slick.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='slick/slick-theme.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='lightbox/css/lightbox.min.css') }}">
+    <style>
+        .display-none {
+            display: none;
+        }
+        .slick-prev:before, .slick-next:before {
+            color: black;
+        }
+        .comment i.icon.ellipsis.vertical:before {
+            font-size: 15px;
+        }
+        .comment .popup li a {
+            color: rgba(0,0,0,.4);
+        }
+    </style>
+{% endblock %}
+{% block sidebars %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="ui grid container" id="example3">
+        <div class="eight wide computer sixteen wide mobile centered column" id="scroller">
+
+            {% set flashes = {
+            'error':   get_flashed_messages(category_filter=['form-error']),
+            'warning': get_flashed_messages(category_filter=['form-check-email']),
+            'info':    get_flashed_messages(category_filter=['form-info']),
+            'success': get_flashed_messages(category_filter=['form-success'])
+		} %}
+
+            {{ f.begin_form(form, flashes) }}
+            <div class="ui grid">
+                <div class="computer only row">
+                    <div class="left ui rail">
+                        <p></p>
+                        <div class="ui sticky">
+                            <h3 class="ui header">Colleagues to follow</h3>
+                            <div class="ui divided items">
+                                {% for user in follow_lists %}
+                                    {{ follow_wid.follow_wid(user, current_user) }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="right ui right rail">
+                        <div class="ui sticky">
+                            <div class="ui cards">
+                                {% for job in jobs %}
+                                    {{ job_wid.job_wid(job) }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui grid">
+                <div class="mobile only tablet only row">
+                    <br>
+                </div>
+            </div>
+            <div class="ui segment" style="background: ghostwhite;">
+                <div class="ui form">
+                    <form>
+                        <div class="field">
+                            {{ f.render_form_field(form.text) }}
+                        </div>
+                        <div class="field">
+                            {{ f.render_form_field(form.photo) }}
+                        </div>
+                        <div class="field">
+                            {{ f.render_form_field(form.post_privacy) }}
+                        </div>
+                        {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
+                        {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
+                        {{ f.form_message(flashes['info'], header='Information', class='info') }}
+                        {{ f.form_message(flashes['success'], header='Success!', class='success') }}
+
+                        {% for field in form | selectattr('type', 'equalto', 'SubmitField') %}
+                            {{ f.render_form_field(field) }}
+                        {% endfor %}
+
+                    </form>
+                </div>
+            </div>
+            {% for post in posts %}
+                {{ post_wid.post_wid(post, moment, current_user) }}
+            {% endfor %}
+        </div>
+        <div class="ui grid">
+            <div class="mobile only tablet only row">
+                <button class="circular ui huge blue icon floating action button">
+                    <i class="large white icon tasks"></i>
+                </button>
+
+                <div class="ui right sidebar inverted menu">
+                    <div class="ui padded grid">
+                        <div class="ui cards">
+                            {% for job in jobs %}
+                                {{ job_wid.job_wid(job) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="pusher">
+                    <!-- Site content !-->
+                </div>
+
+            </div>
+        </div>
+        <div class="sixteen wide computer sixteen wide mobile centered column">
+            <div class="ui">
+                <p></p>
+                <div class="ui active inverted dimmer" id="sentinel">
+                    <div class="ui loader"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'partials/_post_modals.html' %}
+
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="{{ url_for('static', filename='slick/slick.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='lightbox/js/lightbox.min.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.slick').slick({
+                infinite: false,
+            });
+        });
+
+        function like(post_id, user_id) {
+            $.post("{{url_for('post.like_post', post_id=100, user_id=1000)}}".replace(/100/, post_id).replace(/1000/, user_id),
+                {
+                    csrf_token: "{{csrf_token()}}",
+                },
+                function (data, status) {
+                    data = JSON.parse(data)
+                    if (data.status == 'success') {
+                        $("#like-count-" + post_id).html("(" + data.count + " likes) ");
+                        if (data.liked == 1) {
+                            $("#like-icon-" + post_id).removeClass("outline")
+                        } else {
+                            $("#like-icon-" + post_id).addClass("outline");
+                        }
+                    }
+                });
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('.ui.sticky')
+                .sticky({
+                    offset: 50,
+                    bottomOffset: 50,
+                    context: '#example3'
+                });
+        })
+    </script>
+    <script>
+        var counter = parseInt($('.post-card').length);
+        function loadItems() {
+            $.get("{{url_for('post.load_more', count=0)}}".replace(/0/, counter), function (data, status) {
+                if (data == "<br><br><h2>No more Posts</h2>") {
+                    $('#scroller').append($(data));
+                    $('#sentinel').hide();
+                    return;
+                }
+                $('#scroller').append($(data));
+                $(document).ready(function () {
+                    $('.slick:not(.slick-initialized)').slick({
+                        infinite: false,
+                    });
+                    refreshImages();
+                });
+                counter = parseInt($('.post-card').length)
+            });
+        }
+
+        var intersectionObserver = new IntersectionObserver(entries => {
+            if (entries[0].intersectionRatio <= 0) {
+                return;
+            }
+            loadItems();
+
+        });
+        intersectionObserver.observe(sentinel);
+    </script>
+{% endblock %}

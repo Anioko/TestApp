@@ -1,0 +1,210 @@
+{% extends 'layouts/base.html' %}
+{% import 'macros/form_macros.html' as f %}
+{% import 'macros/check_password.html' as check %}
+{% import 'macros/post_macros.html' as post_wid %}
+{% block page_title %}{{ user.first_name }} {{ user.last_name }}, {{ user.profession }},{{ user.city }}, {{ user.state }}{% endblock %}
+
+{% block  custom_head_tags %}
+    <meta name="description"
+          content="{{ user.first_name }} {{ user.last_name }}, {{ user.profession }},{{ user.summary_text }}, {{ user.city }}, {{ user.state }}, {{ user.country }}">
+    <meta name="author" content="{{ config.APP_NAME }}">
+    <meta name="og:title" content="{{ user.first_name }} {{ user.last_name }}, {{ user.profession }},{{ user.city }}, {{ user.state }}"/>
+    <meta name="og:type" content="website"/>
+    <meta name="og:url" content="https://www.{{ config.APP_NAME }}.com"/>
+    <meta name="og:image" content="{{ url_for('static', filename='images/home/slider/hill.png') }}"/>
+    <meta name="og:site_name" content="{{ config.APP_NAME }}"/>
+    <meta name="og:description"
+          content="{{ user.first_name }} {{ user.last_name }}, {{ user.profession }},{{ user.summary_text }}, {{ user.city }}, {{ user.state }}, {{ user.country }}"/>
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:site" content="@medivillenetwork"/>
+    <meta name="twitter:creator" content="@anioko1"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='slick/slick.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='slick/slick-theme.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='lightbox/css/lightbox.min.css') }}">
+    <style>
+        .ui.vertical.divider:after, .ui.vertical.divider:before {
+            height: 100%;
+        }
+
+        .display-none {
+            display: none;
+        }
+        .slick-prev:before, .slick-next:before {
+            color: black;
+        }
+        .comment i.icon.ellipsis.vertical:before {
+            font-size: 15px;
+        }
+        .comment .popup li a {
+            color: rgba(0,0,0,.4);
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    {% set flashes = {
+            'error':   get_flashed_messages(category_filter=['form-error']),
+            'warning': get_flashed_messages(category_filter=['form-check-email']),
+            'info':    get_flashed_messages(category_filter=['form-info']),
+            'success': get_flashed_messages(category_filter=['form-success'])
+		} %}
+
+    <div class="ui grid container">
+        <div class="one wide column"></div>
+        <div class="ten wide computer sixteen wide mobile centered column">
+            <div class="ui very padded segment">
+                <div class="ui relaxed divided items">
+                    <div class="item">
+                        <div class="content">
+                            <a class="header">{{ user.first_name }} {{ user.last_name }}</a>
+                            <!---full name goes here --->
+                            <div class="meta"><a>{{ user.profession }}</a></div>
+                            <div class="meta"><a>Joined : {{ user.created_day }}</a></div>
+                            <!----year joined goes here---->
+                            <div class="meta"><a> {{ user.city }}</a>,
+                            <a> {{ user.state }}</a>,
+                            <a> {{ user.country }}</a></div>
+                            <div class="description"> <!---Profile description or summary goes here--->
+                                {{ user.summary_text }}
+                            </div>
+                            {% if user != current_user %}
+                                <div class="extra">
+                                    {% if not current_user.is_following(user) %}
+                                            <a  class="ui blue button follow-button" target="_self" href="#" data-value="{{ user.id }}">Follow</a>
+                                    {% else %}
+                                            <a class="ui red button follow-button" target="_self" href="#" data-value="{{ user.id }}">Un-follow</a>
+                                    {% endif %}
+                                    <div class="ui button">
+                                        <a href="{{ url_for('main.send_message', recipient=user.id, full_name=user.full_name) }}">Message</a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="ui small image">
+                            <a href="{{ user.get_photo() }}" data-lightbox="user-image"><img src="{{ user.get_photo() }}"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui segment">
+                <div class="ui two column very relaxed grid">
+                    <div class="column">
+                        <p>Following</p>
+                        <a href="{{ url_for('main.following', user_id=user.id) }}">
+                            <p>( {{ user.followed.all() | length }} )</p>
+                        </a>
+                    </div>
+                    <div class="column">
+                        <p>Followers</p>
+                        <a href="{{ url_for('main.followers', user_id=user.id) }}">
+                            <p>( {{ user.followers.all() | length }} )</p>
+                        </a>
+                    </div>
+                </div>
+                <div class="ui vertical divider" style="height: 50%">
+                </div>
+            </div>
+
+            <div class="ui top attached tabular menu">
+                <a href="{{ url_for(request.endpoint, id=user.id, full_name=user.full_name, active='posts') }}"
+                   class="item {% if active=='posts' %} active {% endif %}" data-tab="first">Posts
+                    ({{ user.posts.all() | length }})</a>
+                <a href="{{ url_for(request.endpoint, id=user.id, full_name=user.full_name, active='questions') }}"
+                   class="item {% if active=='questions' %} active {% endif %}" data-tab="second">Questions
+                    ({{ user.questions.all() | length }})</a>
+            </div>
+            <div class="ui bottom attached tab segment active" data-tab="first">
+                {% if active == 'posts' %}
+
+                    {% for post in items.items %}
+                        {{ post_wid.post_wid(post, moment, current_user) }}
+                    {% endfor %}
+
+                {% elif active == 'questions' %}
+                    {% for post in items.items %}
+                        <div class="ui fluid card">
+                            <div class="extra content">
+                                <h2 class="left floated ui header">
+                                    <a href="{{ url_for('main.user', id=post.user.id, full_name=post.user.full_name) }}">
+                                        <img class="left floated mini ui image rounded" src="{{ post.user.get_photo() }}">
+                                        <a href="{{ url_for('main.user', id=post.user.id, full_name=post.user.full_name) }}">
+                                            <span class="post-head">
+                                                <a href="{{ url_for('main.user', id=post.user.id, full_name=post.user.full_name) }}">
+                                                    {{ post.user.full_name }}</a>
+                                                <small class="very-small">
+                                                    <a href="{{ url_for('main.question_details',question_id=post.id, title=post.title ) }}">{{ post.created_at.strftime("%b %d, %Y at %H:%I:%S") }}</a>
+                                                </small>
+                                            </span>
+                                </h2>
+                            </div>
+                            <div class="content">
+                                <div class="header"><a
+                                        href="{{ url_for('main.question_details', question_id=post.id, title=post.title ) }}">{{ post.title }}</a>
+                                </div>
+                                <div class="meta">
+                                    <span class="right floated time">{{ moment(post.timestamp).fromNow() }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        <br>
+            <div class="ui centered grid ">
+            {% if items.pages > 0 %}
+                <div class="ui pagination menu">
+                    {% for page in items.iter_pages() %}
+                        {% if page %}
+                            {% if page != items.page %}
+                                <a class="item"
+                                   href="{{ url_for(request.endpoint, id=user.id, full_name=user.full_name, active=active, page=page) }}">
+                                    {{ page }}
+                                </a>
+                            {% else %}
+                                <a class="item active">
+                                    {{ page }}
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <div class="disabled item">
+                                ...
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% include 'partials/_post_modals.html' %}
+
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="{{ url_for('static', filename='slick/slick.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='lightbox/js/lightbox.min.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.slick').slick({
+                infinite: false,
+            });
+        });
+
+        function like(post_id, user_id) {
+            $.post("{{url_for('post.like_post', post_id=100, user_id=1000)}}".replace(/100/, post_id).replace(/1000/, user_id),
+                {
+                    csrf_token: "{{csrf_token()}}",
+                },
+                function (data, status) {
+                    data = JSON.parse(data)
+                    if (data.status == 'success') {
+                        $("#like-count-" + post_id).html("(" + data.count + " likes) ");
+                        if (data.liked == 1) {
+                            $("#like-icon-" + post_id).removeClass("outline")
+                        } else {
+                            $("#like-icon-" + post_id).addClass("outline");
+                        }
+                    }
+                });
+        }
+    </script>
+{% endblock %}

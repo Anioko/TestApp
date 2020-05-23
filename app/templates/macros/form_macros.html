@@ -18,32 +18,34 @@
     } %}
 
     {{ begin_form(form, flashes, method=method, extra_classes=extra_classes, enctype=enctype) }}
-        {% for field in form if not (is_hidden_field(field) or field.type == 'SubmitField') %}
-            {{ render_form_field(field) }}
-        {% endfor %}
+    {% for field in form if not (is_hidden_field(field) or field.type == 'SubmitField') %}
+        {{ render_form_field(field) }}
+    {% endfor %}
 
-        {{ form_message(flashes['error'], header='Something went wrong.', class='error') }}
-        {{ form_message(flashes['warning'], header='Check your email.', class='warning') }}
-        {{ form_message(flashes['info'], header='Information', class='info') }}
-        {{ form_message(flashes['success'], header='Success!', class='success') }}
+    {{ form_message(flashes['error'], header='Something went wrong.', class='error') }}
+    {{ form_message(flashes['warning'], header='Check your email.', class='warning') }}
+    {{ form_message(flashes['info'], header='Information', class='info') }}
+    {{ form_message(flashes['success'], header='Success!', class='success') }}
 
-        {% for field in form | selectattr('type', 'equalto', 'SubmitField') %}
-            {{ render_form_field(field) }}
-        {% endfor %}
+    {% for field in form | selectattr('type', 'equalto', 'SubmitField') %}
+        {{ render_form_field(field) }}
+    {% endfor %}
 
     {{ end_form(form) }}
 {% endmacro %}
 
 {# Set up the form, including hidden fields and error states #}
-{% macro begin_form(form, flashes, method='POST', extra_classes='', enctype=None) %}
+{% macro begin_form(form, flashes, method='POST', extra_classes='', enctype=None, _id=None, action="") %}
     {# Set proper enctype #}
     {% if enctype is none and (form | selectattr('type', 'equalto', 'FileField') | list | length > 0) %}
+        {% set enctype = 'multipart/form-data' %}
+    {% elif enctype is none and (form | selectattr('type', 'equalto', 'MultipleFileField') | list | length > 0) %}
         {% set enctype = 'multipart/form-data' %}
     {% else %}
         {% set enctype = '' %}
     {% endif %}
 
-    <form action="" method="{{ method }}" enctype="{{ enctype }}" class="ui form {{ extra_classes }}
+    <form {% if _id is not none %} id="{{ _id }}" {% endif %} action="{{ action }}" method="{{ method }}" enctype="{{ enctype }}" class="ui form {{ extra_classes }}
         {% if form.errors or flashes['error'] %} error
         {% elif flashes['warning'] %} warning
         {% elif flashes['info'] %} info
@@ -83,21 +85,21 @@
             {{ field.description }}
         </div>
     {% endif %}
-    <div id="{{field.name}}" class="ui fluid {% if field.multiple %}multiple {% endif %}search selection dropdown">
+    <div id="{{ field.name }}" class="ui fluid {% if field.multiple %}multiple {% endif %}search selection dropdown">
         {{ field() }}
         <i class="dropdown icon"></i>
-        <div class="default text">{{field.label.text}}</div>
+        <div class="default text">{{ field.label.text }}</div>
         <div class="menu">
             {% for choice in field.choices %}
-                <div class="item">{{choice}}</div>
+                <div class="item">{{ choice }}</div>
             {% endfor %}
         </div>
     </div>
     {% if field.allow_custom %}
         <script>
-            $(document).ready(function() {
+            $(document).ready(function () {
                 $('div#{{field.name}}').dropdown({
-                  allowAdditions: true
+                    allowAdditions: true
                 })
             });
         </script>

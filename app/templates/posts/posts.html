@@ -1,0 +1,7 @@
+{% import 'macros/form_macros.html' as f %}
+{% import 'macros/comment_macros.html' as traverse %}
+{% import 'macros/post_macros.html' as post_wid %}
+
+{% for post in posts %}
+    {{ post_wid.post_wid(post, moment, current_user) }}
+{% endfor %}

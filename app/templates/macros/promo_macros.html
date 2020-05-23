@@ -1,0 +1,19 @@
+{% macro promo_wid(promo) -%}
+    <div class="card">
+        <div class="content">
+            <div class="header">
+                <div class="center aligned ui">
+                    <img height="100" src="{{ promo.get_photo() }}">
+                </div>
+                <hr>
+                <a href="{{ url_for('promos.promo_details', promo_id=promo.id, promo_title=promo.promo_title, promo_city=promo.promo_city, promo_state=promo.promo_state, promo_country=promo.promo_country) }}">{{ promo.promo_title }}</a>
+            </div>
+            <div class="meta">Published By :<span class="ui primary label">{{ promo.organisation.org_name }}</span></div>
+            <div class="meta">Published&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ promo.pub_date.strftime( '%d %B, %Y ') }}<br>
+                Ends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ promo.end_date.strftime( '%d %B, %Y ') }}</div>
+            <div class="description">
+                {{ promo.promo_city }}, {{ promo.promo_state }}, {{ promo.promo_country }}
+            </div>
+        </div>
+    </div>
+{%- endmacro %}

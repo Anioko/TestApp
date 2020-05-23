@@ -1,0 +1,149 @@
+{% import 'macros/comment_macros.html' as traverse %}
+{% macro post_wid(post, moment, current_user) -%}
+    <div class="ui fluid card post-card">
+        <div class="extra content">
+            <h2 class="left floated ui header">
+                <a href="{{ url_for('main.user', id=post.creator.id, full_name=post.creator.full_name) }}">
+                    <img class="left floated mini ui image" src="{{ post.creator.get_photo() }}"></a>
+                <span class="post-head">
+                    <a href="{{ url_for('main.user', id=post.creator.id, full_name=post.creator.full_name) }}">{{ post.creator.full_name }}</a><br>
+                    <small class="very-small"><a href="{{ url_for('post.view_post', post_id=post.id) }}">{{ post.created_at.strftime("%b %d, %Y at %H:%I:%S") }}</a>
+                        {% if post.post_privacy == 0 %}
+                            <i title="Public post" class="globe icon"></i>
+                        {% elif post.post_privacy == 1 %}
+                            <i title="Followers only post" class="users icon"></i>
+                        {% elif post.post_privacy == 2 %}
+                            <i title="Private post" class="lock icon"></i>
+                        {% endif %}
+                    </small>
+                </span>
+            </h2>
+            {% if post.creator.id == current_user.id %}
+                <p class="options btn" style="cursor: pointer">
+                    <i class="large ellipsis vertical icon right floated" style="margin-right: -0.5rem;">
+                    </i>
+                </p>
+                <div class="ui special popup" style="margin-right: -1rem;margin-top: 2rem;padding-left: 1px;padding-right: 1px; padding-bottom: 1px">
+                    <ul style="list-style-type: none;padding:0;margin-bottom: 1px;margin-top: 0">
+                        <li class="item" style="padding: 5px 35px 3px 15px"
+                            onclick='editPost("{{ post.id }}", {{ post.text | tojson }}, "{{ post.post_privacy }}")'>
+                            <a href="#">Edit Post</a>
+                        </li>
+                        <li class="item" style="padding: 5px 35px 3px 15px" onclick='deletePost("{{ post.id }}")'>
+                            <a href="#">Delete Post</a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+        <div class="content">
+            <div class="header"><p></p></div>
+            <div class="meta">
+                <a href="{{ url_for('post.view_post', post_id=post.id) }}"> <span class="right floated time">{{ moment(post.created_at).fromNow() }}</span></a>
+            </div>
+            <div class="description">
+                <p>{{ post.text }}</p>
+            </div>
+            {% if post.image_url %}
+                <hr>
+                <div class="slick" style="margin: 0 20px;">
+                    {% for image in json_load(post.image_filename) %}
+                        <a href="{{ url_for('_uploads.uploaded_file', setname='images',
+                           filename=image.values() | list | first , _external=True) }}" data-lightbox="post-{{ post.id }}">
+                            <div style="width:100%; height: 400px; background-image: url('{{ url_for('_uploads.uploaded_file', setname='images',
+                           filename=image.values() | list | first , _external=True) }}'); background-position: center;background-size: cover"
+                                 class="post-image" data-content="{{ post.id }}" data-size="{{ post.image_size(image.values() | list | first ) }}">
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <h2 class="ui divider"></h2>
+        <div class="ui comments" style="margin-top: 0">
+            <h3 class="ui dividing header" style="text-align:center">Comments
+                <p class="right floated">
+                    <small id="like-count-{{ post.id }}">({{ post.likes.all() | length }} likes)</small>
+                    <a href="#" onclick="like({{ post.id }}, {{ current_user.id }});return false"><i
+                            id="like-icon-{{ post.id }}"
+                            class="thumbs up icon {% if not post.user_likes(current_user.id) %} outline {% endif %}"></i>
+                    </a>
+                </p>
+            </h3>
+            {% for comment in post.comments %}
+                {% if comment.parent_id == None and comment.author %}
+                    <div class="comment">
+                        <a class="avatar" href="{{ url_for('main.user', id=comment.author.id, full_name=comment.author.full_name) }}">
+                            <img class="rounded" src="{{ comment.author.get_photo() }}">
+                        </a>
+                        <div class="content">
+                            <a class="author" href="{{ url_for('main.user', id=comment.author.id, full_name=comment.author.full_name) }}">{{ comment.author.full_name }}</a>
+                            <div class="metadata">
+                                <span class="date">{{ moment(comment.created_at).fromNow() }}</span>
+                            </div>
+
+                            {% if comment.author.id == current_user.id %}
+                                <p class="options btn" style="cursor: pointer; float: right; margin: 5px 5px 0 0">
+                                    <i class="large ellipsis vertical icon right floated" style="margin-right: -0.5rem;">
+                                    </i>
+                                </p>
+                                <div class="ui special popup" style="margin-right: -1rem;margin-top: 2rem;padding-left: 1px;padding-right: 1px; padding-bottom: 1px">
+                                    <ul style="list-style-type: none;padding:0;margin-bottom: 1px;margin-top: 0">
+                                        <li class="item" style="padding: 5px 35px 3px 15px"
+                                            onclick='editComment("{{ comment.id }}", {{ comment.text | tojson }})'>
+                                            <a href="#">Edit Comment</a>
+                                        </li>
+                                        <li class="item" style="padding: 5px 35px 3px 15px" onclick='deleteComment("{{ comment.id }}")'>
+                                            <a href="#">Delete Comment</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            {% endif %}
+
+                            <div class="text">
+                                <p>{{ comment.text }}</p>
+                            </div>
+                            <div class="actions">
+                                <a class="reply" href="#"
+                                   onclick="$('#comment-'+{{ comment.id }}).toggleClass('display-none');return false;">Reply</a>
+                                <form id="comment-{{ comment.id }}" class="ui reply form display-none" method="POST"
+                                      action="{{ url_for('post.submit_comment') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <input type="hidden" name="post_id" value="{{ post.id }}"/>
+                                    <input type="hidden" name="parent_id" value="{{ comment.id }}"/>
+                                    <div class="inline fields">
+                                        <div class="field"
+                                             style="padding-right: 10px; padding-left: 10px;width: calc(100% - 60px);">
+                                            <input id="comment_re" name="comment_text" type="text"
+                                                   style="background: #eee;border-radius: 15px;width: 100%">
+                                        </div>
+                                        <div class="field  "><button id="submit" name="submit" type="submit" class="ui icon primary button"><i class="icon send"></i></button></div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        {% if 'children' in comment.drilldown_tree()[0].keys() %}
+                            <div class="comments">
+                                {{ traverse.traverse(comment.drilldown_tree()[0]['children'], post.id, moment, current_user) }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <form class="ui reply form" method="POST" action="{{ url_for('post.submit_comment') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="post_id" value="{{ post.id }}"/>
+                <input type="hidden" name="parent_id" value="0"/>
+                <div class="inline fields">
+                    <div class="field" style="padding-right: 10px; padding-left: 10px;width: calc(100% - 60px);">
+                        <input id="comment_reply" name="comment_text" type="text"
+                               style="background: #eee;border-radius: 15px;width:100%">
+                    </div>
+                    <div class="field  "><button id="submit" name="submit" type="submit" class="ui icon primary button"><i class="icon send"></i></button></div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+{%- endmacro %}

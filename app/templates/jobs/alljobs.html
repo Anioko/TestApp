@@ -1,0 +1,32 @@
+{% extends 'layouts/base.html' %}
+{% import 'macros/job_macros.html' as job_wid %}
+{% import 'macros/crawled_job_macros.html' as crawledjob_wid %}
+{% import 'macros/jobpikr_macros.html' as jobpikr_wid %}
+
+
+{% block content %}
+
+    <div class="ui centered grid">
+    <div class="one wide column">
+    </div>
+    <div class="fourteen wide column">
+        <div class="ui centered cards">
+            <div class="card">
+                {% for job in appts %}
+                    {{ job_wid.job_wid(job) }}
+                {% endfor %}
+            </div>
+            <div class="ui cards">
+                {# for crawlerjob in crawlers #}
+                {# crawledjob_wid.crawledjob_wid(crawlerjob) #}
+                {# endfor #}
+            </div>
+            <div class="ui cards">
+                {% for jobpikr in jobs %}
+                    {{ jobpikr_wid.jobpikr_wid(jobpikr) }}
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

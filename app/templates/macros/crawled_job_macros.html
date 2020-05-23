@@ -1,0 +1,19 @@
+{% macro crawledjob_wid(crawledjob) -%}
+    <div class="card">
+        <div class="content">
+            <div class="header">
+                <!----<div class="center aligned ui">
+                    <img height="100" src="{{ crawledjob.image_filename }}">
+                </div>------>
+                <!----<hr>----->
+                <a href="{{ url_for('jobs.crawled_job_details', job_id=crawledjob.id, job_title=crawledjob.job_title, job_city=crawledjob.job_city, job_state=crawledjob.job_state, job_country=crawledjob.job_country) }}">{{ crawledjob.job_title }}</a>
+            </div>
+            <div class="meta">Published By :<span class="ui primary label">{{ crawledjob.company_name }}</span></div>
+            <div class="meta">Published&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ crawledjob.pub_date }}<br>
+                 {% if crawledjob.end_date  %}Ends&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{ crawledjob.end_date}}{% else %}{% endif %}</div>
+            <div class="description">
+                {{ crawledjob.job_city }}, {{ crawledjob.job_state }}, {{ crawledjob.job_country }}
+            </div>
+        </div>
+      </div>
+{%- endmacro %}
