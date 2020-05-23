@@ -1,42 +1,73 @@
+import operator
+import operator
 import os
+import uuid
+from functools import partial
+from hashlib import md5, sha512
 
-from flask import Flask
+from flask import Flask, session, request
+from flask.globals import _lookup_req_object
 from flask_assets import Environment
+from flask_ckeditor import CKEditor
 from flask_compress import Compress
-from flask_login import LoginManager
+from flask_jwt_extended import JWTManager
+from flask_login._compat import text_type
+from flask_login.utils import _get_remote_addr
 from flask_mail import Mail
+from flask_moment import Moment
 from flask_rq import RQ
-from flask_sqlalchemy import SQLAlchemy
+from flask_share import Share
+from flask_uploads import UploadSet, configure_uploads, IMAGES
 from flask_wtf import CSRFProtect
 
-from app.assets import app_css, app_js, vendor_css, vendor_js
-from config import config as Config
+# from app.blueprints.api.views import main_api
+from werkzeug.local import LocalProxy
+
+from app.utils import db, login_manager, get_cart, image_size, json_load
+from config import config
+from .assets import app_css, app_js, vendor_css, vendor_js
+from flask_session import Session
+
+# from app.models import Notification
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 mail = Mail()
-db = SQLAlchemy()
 csrf = CSRFProtect()
 compress = Compress()
-
+images = UploadSet('images', IMAGES)
+docs = UploadSet('docs', ('rtf', 'odf', 'ods', 'gnumeric', 'abw', 'doc', 'docx', 'xls', 'xlsx', 'pdf'))
+share = Share()
+moment = Moment()
+jwt = JWTManager()
+sess = Session()
 # Set up Flask-Login
-login_manager = LoginManager()
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'account.login'
 
+import app.models as models
 
-def create_app(config):
+
+def create_app(config_name):
     app = Flask(__name__)
-    config_name = config
-
-    if not isinstance(config, str):
-        config_name = os.getenv('FLASK_CONFIG', 'default')
-
-    app.config.from_object(Config[config_name])
+    app.config.from_object(config[config_name])
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # not using sqlalchemy event system, hence disabling it
+    app.config['UPLOADED_IMAGES_DEST'] = 'C:/Users/user/mywebprojects/healthcareprofessionals/app/static/photo/' if \
+        not os.environ.get('UPLOADED_IMAGES_DEST') else os.path.dirname(os.path.realpath(__file__)) + os.environ.get(
+        'UPLOADED_IMAGES_DEST')
+    app.config['UPLOADED_DOCS_DEST'] = 'C:/Users/user/mywebprojects/healthcareprofessionals/app/static/docs/' if \
+        not os.environ.get('UPLOADED_DOCS_DEST') else os.path.dirname(os.path.realpath(__file__)) + os.environ.get(
+        'UPLOADED_DOCS_DEST')
+    app.config['docs'] = app.config['UPLOADED_DOCS_DEST']
 
-    Config[config_name].init_app(app)
+    app.config['CKEDITOR_SERVE_LOCAL'] = True
+    app.config['CKEDITOR_HEIGHT'] = 400
+    app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
+    app.config['CKEDITOR_ENABLE_CSRF'] = True  # if you want to enable CSRF protect, uncomment this line
+    app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
+
+    config[config_name].init_app(app)
 
     # Set up extensions
     mail.init_app(app)
@@ -45,7 +76,13 @@ def create_app(config):
     csrf.init_app(app)
     compress.init_app(app)
     RQ(app)
-
+    configure_uploads(app, (images))
+    configure_uploads(app, docs)
+    ckeditor = CKEditor(app)
+    share.init_app(app)
+    moment.init_app(app)
+    jwt.init_app(app)
+    sess.init_app(app)
     # Register Jinja template functions
     from .utils import register_template_utils
     register_template_utils(app)
@@ -68,13 +105,78 @@ def create_app(config):
         SSLify(app)
 
     # Create app blueprints
-    from .main import main as main_blueprint
+    from .blueprints.public import public as public_blueprint
+    app.register_blueprint(public_blueprint)
+
+    from .blueprints.seo_arizona import seo_arizona as seo_arizona_blueprint
+    app.register_blueprint(seo_arizona_blueprint)
+
+    from .blueprints.seo_world import seo_world as seo_world_blueprint
+    app.register_blueprint(seo_world_blueprint)
+
+    from .blueprints.main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    from .account import account as account_blueprint
+    from .blueprints.account import account as account_blueprint
     app.register_blueprint(account_blueprint, url_prefix='/account')
 
-    from .admin import admin as admin_blueprint
+    from .blueprints.admin import admin as admin_blueprint
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
+
+    from .blueprints.marketplace import marketplace as marketplace_blueprint
+    app.register_blueprint(marketplace_blueprint, url_prefix='/marketplace')
+
+    from .blueprints.jobs import jobs as jobs_blueprint
+    app.register_blueprint(jobs_blueprint, url_prefix='/jobs')
+
+    from .blueprints.crawlers import crawlers as crawlers_blueprint
+    app.register_blueprint(crawlers_blueprint)
+
+    from .blueprints.promos import promos as promos_blueprint
+    app.register_blueprint(promos_blueprint, url_prefix='/promos')
+
+    from .blueprints.posts import post_blueprint as post_blueprint
+    app.register_blueprint(post_blueprint)
+
+    from .blueprints.organisations import organisations as organisations_blueprint
+    app.register_blueprint(organisations_blueprint, url_prefix='/organisations')
+
+    from .blueprints.sitemaps import sitemaps as sitemaps_blueprint
+    app.register_blueprint(sitemaps_blueprint)
+
+    from .blueprints.api import api as apis_blueprint
+    app.register_blueprint(apis_blueprint, url_prefix='/api')
+
+    # main_api.init_app(app)
+    app.jinja_env.globals.update(json_load=json_load, image_size=image_size, get_cart=get_cart)
+
+    @app.before_request
+    def before_request():
+        try:
+            session['cart_id']
+        except:
+            u = uuid.uuid4()
+            user_agent = request.headers.get('User-Agent')
+            if user_agent is not None:
+                user_agent = user_agent.encode('utf-8')
+            base = 'cart: {0}|{1}|{2}'.format(_get_remote_addr(), user_agent, u)
+            if str is bytes:
+                base = text_type(base, 'utf-8', errors='replace')  # pragma: no cover
+            h = sha512()
+            h.update(base.encode('utf8'))
+            session['cart_id'] = h.hexdigest()
+
+    @app.cli.command()
+    def routes():
+        """'Display registered routes"""
+        rules = []
+        for rule in app.url_map.iter_rules():
+            methods = ','.join(sorted(rule.methods))
+            rules.append((rule.endpoint, methods, str(rule)))
+
+        sort_by_rule = operator.itemgetter(2)
+        for endpoint, methods, rule in sorted(rules, key=sort_by_rule):
+            route = '{:50s} {:25s} {}'.format(endpoint, methods, rule)
+            print(route)
 
     return app
