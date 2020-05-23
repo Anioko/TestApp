@@ -147,6 +147,9 @@ def create_app(config_name):
     from .blueprints.api import api as apis_blueprint
     app.register_blueprint(apis_blueprint, url_prefix='/api')
 
+    from .blueprints.professionals import professionals_blueprint as professionals_blueprint
+    app.register_blueprint(professionals_blueprint)
+
     # main_api.init_app(app)
     app.jinja_env.globals.update(json_load=json_load, image_size=image_size, get_cart=get_cart)
 
