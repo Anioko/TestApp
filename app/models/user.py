@@ -121,6 +121,11 @@ class User(UserMixin, db.Model):
     user_submissions = db.relationship('Submission', backref='user', lazy='joined')
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+    contractors = db.relationship('Contractor', backref='user', lazy='dynamic')
+    employments = db.relationship('Employment', backref='user', lazy='dynamic')
+    opportunities = db.relationship('Opportunity', backref='user', lazy='dynamic')
+    workplaces = db.relationship('Workplace', backref='user', lazy='dynamic')
+    schools = db.relationship('School', backref='user', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -1287,9 +1292,10 @@ class Contractor(db.Model):
 
 class Workplace(db.Model):    
 ###Places of work to be listed here
-   __tablename__ = 'workplaces'
+    __tablename__ = 'workplaces'
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
-    name = StringField(' Name of the organization')
+    name = db.Column(db.String)
     description = db.Column(db.String)
     role = db.Column(db.String)
     role_description = db.Column(db.String)
@@ -1307,7 +1313,8 @@ class Workplace(db.Model):
 
 class School(db.Model): 
 ###Schools to be listed here
-   __tablename__ = 'schools'
+    __tablename__ = 'schools'
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
     name = db.Column(db.String)
     description = db.Column(db.String)

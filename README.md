@@ -185,7 +185,8 @@ $ python manage.py add_fake_data
 ## Running the app
 
 ```
-$ source env/bin/activate
+$ sudo service redis-server stop
+$ source venv/bin/activate
 $ honcho start -e config.env -f Local
 ```
 
