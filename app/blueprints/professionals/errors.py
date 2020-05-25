@@ -1,6 +1,6 @@
 from flask import render_template
 
-from app.blueprints.professionals.views importprofessionals
+from app.blueprints.professionals.views import professionals
 
 
 @professionals.app_errorhandler(403)

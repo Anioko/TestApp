@@ -9,10 +9,10 @@ promos = Blueprint('promos', __name__)
 @promos.route('/list/')
 def promos_list():
     #appts = Promo.query.filter(Promo.organisation != None).filter(Promo.end_date >= datetime.now()).order_by(Promo.pub_date.asc()).all()
-    #return render_template('promos/allpromos.html', appts=appts)
+    #return render_template('promos/allprofessionals.html', appts=appts)
     #def promos_list():
     appts = Promo.query.filter(Promo.organisation != None).filter(Promo.end_date >= datetime.now()).order_by(Promo.pub_date.asc()).all()
-    return render_template('promos/allpromos.html', appts=appts)
+    return render_template('promos/allprofessionals.html', appts=appts)
 
 
 
@@ -22,7 +22,7 @@ def promo_details(promo_id, promo_title, promo_city, promo_state, promo_country)
     appts = Promo.query.filter(Promo.id == promo_id).first_or_404()
     org_users = User.query.all()
     orgs = Organisation.query.filter(Organisation.user_id == User.id).all()
-    return render_template('promos/promo_details.html', appt=appts, orgs=orgs, org_users=org_users)
+    return render_template('promos/professionals_details.html', appt=appts, orgs=orgs, org_users=org_users)
 
 
 @promos.route('/<int:promo_id>/<promo_title>/apply')

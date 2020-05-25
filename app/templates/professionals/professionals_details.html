@@ -1,0 +1,304 @@
+{% extends 'layouts/base.html' %}
+{% block page_title %}{{ appt.promo_title or '(No Title)' }} promo in {{ appt.promo_city|default('') }}{% endblock %}
+{% block custom_head_tags %}
+<meta name="description"
+      content="{{ appt.description }}">
+<meta name="author" content="{{ config.APP_NAME }}">
+<meta name="og:title" content="{{ appt.promo_title or '(No Title)' }}, {{ config.APP_NAME }} "/>
+<meta name="og:type" content="website"/>
+<meta name="og:url" content="https://www.{{ config.APP_NAME }}.com"/>
+<meta name="og:image" content="{{ url_for('static', filename='images/home/slider/hill.png') }}"/>
+<meta name="og:site_name" content="{{ config.APP_NAME }}"/>
+<meta name="og:description"
+      content="{{ appt.description }}"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:site" content="@medivillenetwork"/>
+<meta name="twitter:creator" content="@anioko1"/>
+{% endblock %}
+{% block content %}
+<div class="ui sixteen column centered grid">
+    <div class="row edit-controls" align="center">
+    </div>
+    <div class="ui sixteen wide column created_promo">
+        <h1>{{ appt.promo_title or '(No Title)' }}</h1>
+        {{ share.load() }}
+        <h3>
+            {% if appt.creator != current_user %}
+            <a href="{{ url_for('promos.promo_apply', promo_id=appt.id, promo_title=appt.promo_title) }}">
+                <button style="margin-bottom: 20px;margin-right: 0;" type="button"
+                        class="big ui teal button"></i> Participate in this promo
+                </button>
+            </a>
+            {% else %}
+            <a href="{{ url_for('organisations.view_submissions', id=appt.id) }}">
+                <button style="margin-bottom: 20px;margin-right: 0;" type="button"
+                        class="big ui teal button"></i>See Submissions
+                </button>
+            </a>
+            {% endif %}
+        </h3>
+        <h3><i class="user outline icon"></i> Organization: {{ appt.organisation.org_name }}</h3>
+        <h3><i class="calendar outline icon"></i> Posted: {{ appt.pub_date.strftime( '%d %B, %Y ') }}</h3>
+        <h3><i class="calendar outline icon"></i> End date: {{ appt.end_date.strftime( '%d %B, %Y ') }}</h3>
+        <h3><i class="marker icon"></i> {{ appt.promo_city|default('') }},{{ appt.promo_country|default('') }}
+        </h3>
+        {% for org in org_users.user_organisations_created %}
+        <h3><i class="building outkine icon"></i> Posted by: {{ org.org_name }}</h3>
+        {% endfor %}
+
+        {% for user in org_users %}
+        {% for organisation in user.user_organisations_created %}
+        {{ organisation.org_name }}
+        {% endfor %}
+        {% endfor %}
+        <div class="ui two column centered grid">
+            <div class="column">
+                <hr>
+                <h4>Promo description</h4><!---I took out |default('')|markdown here---->
+                {{ appt.description }}
+                {{ share.create(title='Share with: ') }}
+                <hr>
+                <div class="requirements">
+                    <h4><i class="fa fa-list"></i></h4>
+                    <ul>
+                        {% if appt.requirement_one %}
+                        <li>{{ appt.requirement_one|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+
+                        {% if appt.requirement_two %}
+                        <li>{{ appt.requirement_two|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+
+                        {% if appt.requirement_three %}
+                        <li>{{ appt.requirement_three|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+
+                        {% if appt.requirement_four %}
+                        <li>{{ appt.requirement_four|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+
+                        {% if appt.requirement_five %}
+                        <li>{{ appt.requirement_five|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+
+                        {% if appt.requirement_six %}
+                        <li>{{ appt.requirement_six|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+                        {% if appt.requirement_seven %}
+                        <li>{{ appt.requirement_seven|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+                        {% if appt.requirement_eight %}
+                        <li>{{ appt.requirement_eight|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+                        {% if appt.requirement_nine %}
+                        <li>{{ appt.requirement_nine|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+                        {% if appt.requirement_ten %}
+                        <li>{{ appt.requirement_ten|default('') }}</li>
+                        {% else %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row edit-controls" align="center">
+            <h3>
+                {% if appt.creator != current_user %}
+                <a href="{{ url_for('promos.promo_apply', promo_id=appt.id, promo_title=appt.promo_title) }}">
+                    <button style="margin-bottom: 20px;margin-right: 0;" type="button"
+                            class="big ui teal button"></i> Participate in this promo
+                    </button>
+                </a>
+                {% else %}
+                <a href="{{ url_for('organisations.view_applicants', id=appt.id) }}">
+                    <button style="margin-bottom: 20px;margin-right: 0;" type="button"
+                            class="big ui teal button"></i>See Submissions
+                    </button>
+                </a>
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+</div>
+
+<div class="ui two column centered grid">
+    <div class="column">
+        <!--<div style="text-align:center;" class="row btn-group">-->
+
+        <a href="http://www.facebook.com/sharer.php?u={{ url_for('promos.promo_details',promo_id=appt.id, promo_title=appt.promo_title,promo_city=appt.promo_city,promo_state=appt.promo_state, promo_country=appt.promo_country, _external=True) }}"
+           title="On Facebook" target="_blank" class="btn btn-default" style="margin-right:-10px;">
+            <i class="fa fa-facebook fa-2x"></i>
+        </a>
+
+        <a href="http://www.facebook.com/sharer.php?u={{ url_for('promos.promo_details',promo_id=appt.id, promo_title=appt.promo_title,promo_city=appt.promo_city,promo_state=appt.promo_state, promo_country=appt.promo_country, _external=True) }}"
+           title="On Facebook" target="_blank" class="btn btn-default" style="margin-right:-10px;">
+            <i class="fa fa-facebook fa-2x"></i>
+        </a>
+
+        <a href="https://twitter.com/intent/tweet?url={{ url_for('promos.promo_details',promo_id=appt.id, promo_title=appt.promo_title,promo_city=appt.promo_city,promo_state=appt.promo_state, promo_country=appt.promo_country, _external=True) }}&via=Teachera&text={{ appt.promo_title }}%20-%20Mediville.com!&hashtags={{ appt.promo_title }},{{ appt.promo_city }}"
+           title="On Twitter" target="_blank" class="btn btn-default" style="margin-right:-10px;">
+            <i class="fa fa-twitter fa-2x"></i>
+        </a>
+
+
+        <a href="http://www.linkedin.com/shareArticle?mini=true&url={{ url_for('promos.promo_details',promo_id=appt.id, promo_title=appt.promo_title,promo_city=appt.promo_city,promo_state=appt.promo_state, promo_country=appt.promo_country, _external=True) }}&title={{ appt.promo_title }} in {{ appt.promo_city }}&summary=Mediville.com!&source=http://Mediville.com"
+           title="On LinkedIn" target="_blank" class="btn btn-default" style="margin-right:-10px;">
+            <i class="fa fa-linkedin fa-2x"></i>
+        </a>
+
+        <a href="http://vk.com/share.php?url={{ url_for('promos.promo_details',promo_id=appt.id, promo_title=appt.promo_title,promo_city=appt.promo_city,promo_state=appt.promo_state, promo_country=appt.promo_country, _external=True) }}&title={{ appt.promo_title }} in {{ appt.promo_city }}&description=Mediville.com!&image=https%3A%2F%2Ffbcdn-sphotos-g-a.akamaihd.net%2Fhphotos-ak-frc3%2Ft1%2F10007500_219483098251971_1640217409_n.jpg"
+           title="On VK.com" target="_blank" class="btn btn-default" style="margin-right:-10px;">
+            <i class="fa fa-vk fa-2x"></i>
+        </a>
+
+        <a data-toggle="modal" href="#share-email-modal" class="btn btn-default" style="margin-right:-10px;">
+            <i class="fa fa-share-alt fa-2x"></i>
+        </a>
+    </div>
+</div>
+
+</div>
+</div>
+
+
+<style>
+        body {
+
+            font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.42857;
+        }
+
+        .applicants table {
+            font-size: 1.2em;
+            color: #1C3766;
+        }
+
+        .created_promo {
+            font-family: 'Lato', sans-serif;
+            color: #1C3766;
+        }
+
+        .created_promo h1 {
+            font-size: 4em;
+            font-weight: 600;
+        }
+
+        .created_promo h2 {
+            font-size: 2.5em;
+            font-weight: 400;
+        }
+
+        .created_promo h3 {
+            font-size: 1.6em;
+            margin: 10px 0 15px 0;
+            font-weight: 500;
+        }
+
+        .created_promo h4 {
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+
+        .created_promo p,
+        .created_promo li {
+            font-size: 1.3em;
+        }
+
+        .created_promo a {
+            color: #5B6C7E;
+            text-decoration: none;
+            -webkit-transition: color .3s;
+            -o-transition: color .3s;
+            transition: color .3s;
+            font-weight: 500;
+            border-bottom: 2px solid;
+        }
+
+        .created_promo a:hover {
+            color: #EC5805;
+            text-decoration: none;
+        }
+
+        .created_promo h1,
+        .created_promo h2,
+        .created_promo h3 {
+            text-align: center;
+        }
+
+        .created_promo .requirements ul li {
+            promo: relative;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .organisation_details {
+            padding: 60px 15px 10px 15px;
+        }
+
+        .share {
+            padding-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .created_promo h1 {
+                font-size: 2.7em;
+            }
+
+            .created_promo h2 {
+                font-size: 2em;
+            }
+
+            .created_promo h3 {
+                font-size: 1.4em;
+            }
+        }
+
+
+
+</style>
+{% endblock %}
+{% block scripts %}
+<script>
+        jQuery(function ($) {
+            $('form[data-async] #emailSaveBtn').click(function (event) {
+                var $form = $(this);
+                var $target = $($form.attr('data-target'));
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/some-endpoint',
+                    data: {
+                        email: $('#email').val(),
+                        url: '{{ url_for('promos.promo_details',promo_id=appt.id, promo_title=appt.promo_title,promo_city=appt.promo_city,promo_state=appt.promo_state, promo_country=appt.promo_country,_external=True) }}',
+                        title: '{{appt.course_title}} in {{appt.city}}',
+                    },
+
+                    success: function (data, status) {
+                        console.log("success");
+                        $('#share-email-modal').modal('hide');
+                        $('#share-email-modal').modal('hide');
+                    }
+
+                });
+                $('#share-email-modal').modal('hide');
+
+                event.preventDefault();
+            });
+        });
+        $('#share-email-modal').on('hidden.bs.modal', function (e) {
+            $('#share-email-modal').modal('hide');
+        })
+
+
+</script>
+{% endblock %}
