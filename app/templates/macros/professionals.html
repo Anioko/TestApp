@@ -6,7 +6,7 @@
                     <img height="100" src="">
                 </div>
                 <hr>
-                <a href="{{ url_for('professionalss.professionals_details', professionals_id=professionals.id, professionals_title=professionals.professionals_title, professionals_city=professionals.professionals_city, professionals_state=professionals.professionals_state, professionals_country=professionals.professionals_country) }}">{{ professionals.title }}</a>
+                <a href="{{ url_for('professionals.professionals_details', professionals_id=professionals.id, professionals_title=professionals.professionals_title, professionals_city=professionals.professionals_city, professionals_state=professionals.professionals_state, professionals_country=professionals.professionals_country) }}">{{ professionals.title }}</a>
             </div>
             <div class="meta">Published By :<span class="ui primary label">{{ professionals.name }}</span></div>
             <div class="meta">Published&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ professionals.pub_date.strftime( '%d %B, %Y ') }}<br>
