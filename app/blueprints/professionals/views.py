@@ -6,9 +6,9 @@ from app.models import *
 professionals = Blueprint('professionals', __name__)
 
 
-@professionals.route('/<opportunity_id>/add/', methods=['Get', 'POST'])
+@professionals.route('/<opp_id>/add/', methods=['Get', 'POST'])
 @login_required
-def create_opportunity(opportunity_id):
+def create_opportunity(opp_id):
     opp = Opportunity.query.filter_by(user_id=current_user.id).filter_by(id=opp_id).first_or_404()
     form = OpportunityForm()
     if request.method == 'POST':
