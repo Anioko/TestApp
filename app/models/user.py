@@ -1252,6 +1252,7 @@ class Opportunity(db.Model):
     city = db.Column(db.String)
     state = db.Column(db.String)
     country = db.Column(db.String)
+    opportunity_type = db.Column(db.String)
     available_now = db.Column(db.String)
     location_type = db.Column(db.String)
 

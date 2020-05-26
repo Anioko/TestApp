@@ -5,14 +5,14 @@ from wtforms.validators import Length, Required
 
 class OpportunityForm(FlaskForm):    
 ###Opportunity form for both contractors and employment seekers to fill out
-    opportunity_title = StringField(' Title for what you are looking for')
-    opportunity_summary = StringField(' Write a very short summary')
+    title = StringField(' Title for what you are looking for')
+    summary = StringField(' Write a very short summary')
     opportunity_type = SelectField(u'Contractor or Full Time Employment', choices=[('Yes', 'No')])
     available_now = SelectField(u'Available now or later', choices=[('Available', 'Available'), ('Available', 'Available')])
     location_type = SelectField(u'Onsite or Remote', choices=[('Onsite', 'Onsite'), ('Remote', 'Remote')])
-    opportunity_city = StringField('Which City?')
-    opportunity_state = StringField('Which State?')
-    opportunity_country = StringField('Which Country?')
+    city = StringField('Which City?')
+    state = StringField('Which State?')
+    country = StringField('Which Country?')
     save = SubmitField('Submit')
 
 class EmploymentForm(FlaskForm):    
@@ -298,7 +298,7 @@ class WorkplaceForm(FlaskForm):
 class SchoolForm(FlaskForm):    
 ###Form to add schools attended by professionals (Employees and contractors)
     name_five = StringField(' Name of the school')
-    description_five = StringField(' Bsc, Msc etc')
+    description = StringField(' Bsc, Msc etc')
     grading = StringField('Your grade')
     start_date = DateField('Start Date:', format='%Y/%m/%d', validators=[Optional()])
     end_date = DateField('End Date:', format='%Y/%m/%d', validators=[Optional()])
