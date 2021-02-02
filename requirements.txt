@@ -44,7 +44,7 @@ webassets==0.12.1
 Werkzeug==0.15.5
 WTForms==2.2.1
 opencv-python==4.2.0.34
-bleach==3.1.5
+bleach==3.3.0
 Flask-JWT-Extended==3.24.1
 PyJWT==1.7.1
 python-socketio==4.6.0
