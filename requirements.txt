@@ -46,7 +46,7 @@ WTForms==2.2.1
 opencv-python==4.2.0.34
 bleach==3.1.5
 Flask-JWT-Extended==3.24.1
-PyJWT==1.7.1
+PyJWT==2.4.0
 python-socketio==4.6.0
 stripe==2.48.0
 sendgrid==6.3.1
